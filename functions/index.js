@@ -104,6 +104,38 @@ exports.pushToReceiver = onRequest(async (req, res) => {
     }
   });
 
+      // 그룹에 인원이 추가되었음을 알려주는 함수
+      exports.userJoinedNotification = onRequest(async (req, res) => {
+        try {
+          // 방장(운전자)의 디바이스 토큰
+          const token = req.body.data.token; // 디바이스 토큰값 가져오기
+          const nickname = req.body.data.nickname;  // 추가된 유저 닉네임
+          console.log("Token --> ", token)
+          console.log("nickname --> ", nickname)
+
+          // 푸시 메시지 설정
+          const messages = [
+            {
+                notification: {
+                title: "카뮤",
+                body: nickname +"이(가) 그룹에 참여하였어요!",
+                },
+                token: token,
+            },
+            ];
+      
+        // 여러 푸시 메시지 전송
+        const responses = await Promise.all(messages.map((message) => messaging.send(message)));
+        console.log("Successfully sent messages:", responses);
+    
+        res.status(200).json({ success: true, data: responses });
+    
+      } catch (error) {
+        console.error("Error Sending message:", error);
+        res.status(500).json({ error: "Failed to send message" });
+      }
+    });
+
 
 
 // // 운전자에게 출발 시간 30분 전에 서버 푸시를 보내주는 함수

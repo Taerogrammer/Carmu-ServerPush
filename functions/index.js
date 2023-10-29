@@ -1,10 +1,13 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
+// const schedule = require('node-schedule');
+
 const {onRequest} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const {getDatabase} = require("firebase-admin/database");
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
+// const { schedule } = require("firebase-functions/v1/pubsub");
 
 admin.initializeApp();
 const firestore = admin.firestore();
@@ -171,3 +174,19 @@ exports.pushToReceiver = onRequest(async (req, res) => {
 //   console.log('1분 마다 실행');
 //   return null;
 // });
+
+// Run once a day at midnight, to clean up the users
+// Manually run the task here https://console.cloud.google.com/cloudscheduler
+exports.accountcleanup = onSchedule("every day 15:20", async (event) => {
+  // Fetch all user details.
+  const inactiveUsers = await getInactiveUsers();
+
+  // Use a pool so that we delete maximum `MAX_CONCURRENT` users in parallel.
+  const promisePool = new PromisePool(
+      () => deleteInactiveUser(inactiveUsers),
+      MAX_CONCURRENT,
+  );
+  await promisePool.start();
+
+  logger.log("User cleanup finished");
+});

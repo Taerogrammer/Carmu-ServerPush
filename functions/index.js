@@ -139,7 +139,7 @@ exports.leftGroupNotification = onRequest(async (req, res) => {
 // 운전을 시작하였을 때, 동승자들에게 푸시 알림을 전송합니다.
 exports.groupInfoChangedNotification = onRequest(async (req, res) => {
   try {
-    // 대상 디바이스의 토큰 배열
+    // 누구한테 보낼 지 선정하기!!
     const tokens = req.body.data.tokens; // 그룹의 동승자들의 토큰값을 받아옵니다.
     console.log("Token --> ", tokens)
 
@@ -152,6 +152,39 @@ exports.groupInfoChangedNotification = onRequest(async (req, res) => {
       notification: {
         title: "카뮤",
         body: "그룹의 정보가 변경되었어요!\n 수정된 정보를 확인해보세요!",
+      },
+      token: token,
+    }));
+
+    // 여러 푸시 메시지 전송
+    const responses = await Promise.all(messages.map((message) => messaging.send(message)));
+    console.log("Successfully sent messages:", responses);
+
+    res.status(200).json({ success: true, data: responses });
+
+  } catch (error) {
+    console.error("Error Sending message:", error);
+    res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// 여정 도중 동승자가 함께 가기를 포기하였을 때, 푸시 알림을 전송합니다.
+exports.giveupNotification = onRequest(async (req, res) => {
+  try {
+    // 누구한테 보낼 지 선정하기!!
+    const tokens = req.body.data.tokens; // 그룹의 동승자들의 토큰값을 받아옵니다.
+    const giveupUserNickname = req.body.data.giveupUserNickname;  // 동승을 포기한 유저의 닉네임을 받아옵니다.
+    console.log("Token --> ", tokens)
+
+    if (!Array.isArray(tokens)) {
+      return res.status(400).json({ error: "Invalid 'tokens' parameter. It should be an array." });
+    }
+
+    // 푸시 메시지 설정
+    const messages = tokens.map((token) => ({
+      notification: {
+        title: "카뮤",
+        body: giveupUserNickname + "님이 여정을 포기하였어요.",
       },
       token: token,
     }));

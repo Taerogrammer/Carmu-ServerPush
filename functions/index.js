@@ -1,7 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const {onRequest} = require("firebase-functions/v2/https");
-// const {getDatabase} = require("firebase-admin/database");
+const {getDatabase} = require("firebase-admin/database");
+const {onSchedule} = require("firebase-functions/v2/scheduler");
 // const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 
 admin.initializeApp();
@@ -26,6 +27,15 @@ exports.journeyStartNotification = onRequest(async (req, res) => {
         body: "운전자가 운전을 시작하였어요!",
       },
       token: token,
+      apns: {
+        payload: {
+          aps: {
+            sound: "default", // iOS에서 기본 소리 사용
+            // 진동을 설정하려면 아래와 같이 추가
+            contentAvailable: true,
+          },
+        },
+      },
     }));
 
     // 여러 푸시 메시지 전송
@@ -59,6 +69,15 @@ exports.lateNotificationToPassenger = onRequest(async (req, res) => {
         body: location + "에 도착이" + lateMin + "분 지연된다고 해요",
       },
       token: token,
+      apns: {
+        payload: {
+          aps: {
+            sound: "default", // iOS에서 기본 소리 사용
+            // 진동을 설정하려면 아래와 같이 추가
+            contentAvailable: true,
+          },
+        },
+      },
     }));
 
     // 여러 푸시 메시지 전송
@@ -93,6 +112,15 @@ exports.lateNotificationToDriver = onRequest(async (req, res) => {
           body: nickname + "님이 " + lateMin + "분 늦는다고 해요",
           },
           token: token, // 수정된 토큰 값
+          apns: {
+            payload: {
+              aps: {
+                sound: "default", // iOS에서 기본 소리 사용
+                // 진동을 설정하려면 아래와 같이 추가
+                contentAvailable: true,
+              },
+            },
+          },
       },
       ];
 
@@ -125,6 +153,15 @@ exports.giveupNotification = onRequest(async (req, res) => {
           body: nickname + "님이 여정을 포기하셨어요",
           },
           token: token, // 수정된 토큰 값
+          apns: {
+            payload: {
+              aps: {
+                sound: "default", // iOS에서 기본 소리 사용
+                // 진동을 설정하려면 아래와 같이 추가
+                contentAvailable: true,
+              },
+            },
+          },
       },
       ];
 
@@ -138,10 +175,6 @@ exports.giveupNotification = onRequest(async (req, res) => {
   res.status(500).json({ error: "Failed to send message" });
 }
 });
-
-
-
-
 
   // -----------------------------------------옵셔널-----------------------------------------
 
@@ -162,6 +195,15 @@ exports.userJoinedNotification = onRequest(async (req, res) => {
           body: nickname +"이(가) 그룹에 참여하였어요!",
           },
           token: token,
+          apns: {
+            payload: {
+              aps: {
+                sound: "default", // iOS에서 기본 소리 사용
+                // 진동을 설정하려면 아래와 같이 추가
+                contentAvailable: true,
+              },
+            },
+          },
       },
       ];
   
@@ -227,6 +269,15 @@ exports.groupInfoChangedNotification = onRequest(async (req, res) => {
         body: "그룹의 정보가 변경되었어요!\n 수정된 정보를 확인해보세요!",
       },
       token: token,
+      apns: {
+        payload: {
+          aps: {
+            sound: "default", // iOS에서 기본 소리 사용
+            // 진동을 설정하려면 아래와 같이 추가
+            contentAvailable: true,
+          },
+        },
+      },
     }));
 
     // 여러 푸시 메시지 전송
